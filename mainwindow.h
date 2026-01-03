@@ -25,14 +25,18 @@ public:
 
     // Declare the switchToVersion function
     void switchToVersion(const QString &versionInput);  // Function to handle version switching
-    void checkUbuntuChroot();  // Assuming you have a function to handle changing the Ubuntu version;  // Function to check the current version of Ubuntu
+    bool checkUbuntuChroot();  // Assuming you have a function to handle changing the Ubuntu version;  // Function to check the current version of Ubuntu
 
 private slots:
     void on_pushUbuntu16_clicked();
     void on_pushUbuntu20_clicked();
     void on_pushUbuntu24_clicked();
     void on_pushCheck_clicked();
-   
+
+
+    void on_pushStart_clicked();
+
+    void on_pushStop_clicked();
 
 private:
     Ui::MainWindow *ui;

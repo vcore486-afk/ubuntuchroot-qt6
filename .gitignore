@@ -3,3 +3,8 @@
 /Makefile
 /.qmake.stash
 /ubuntuchroot-qt6
+/mainwindow.o
+/moc_mainwindow.cpp
+/moc_mainwindow.o
+/moc_predefs.h
+/ui_mainwindow.h

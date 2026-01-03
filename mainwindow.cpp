@@ -7,6 +7,7 @@
 #include <QRegularExpression>
 #include <QDir>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,27 +22,25 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::on_pushUbuntu16_clicked() {
-    checkUbuntuChroot();  // Assuming you have a function to handle changing the Ubuntu version
+
     switchToVersion("16.04");  // Для активации Ubuntu 16.04    
     currentUbuntuVersion = "16.04";
     ui->textEdit->append("Выбрана Ubuntu 16.04");
 }
 
 void MainWindow::on_pushUbuntu20_clicked() {
-    checkUbuntuChroot();  // Assuming you have a function to handle changing the Ubuntu version
+
     switchToVersion("20.04");  // Для активации Ubuntu 20.04
     currentUbuntuVersion = "20.04";
     ui->textEdit->append("Выбрана Ubuntu 20.04");
 }
 
 void MainWindow::on_pushUbuntu24_clicked() {
-    checkUbuntuChroot();  // Assuming you have a function to handle changing the Ubuntu version
-    switchToVersion("24.04");  // Для активации Ubuntu 16.04
+
+    switchToVersion("24.04");  // Для активации Ubuntu 24.04
     currentUbuntuVersion = "24.04";
     ui->textEdit->append("Выбрана Ubuntu 24.04");
 }
-
-#include <QRegularExpression>   // Убедитесь, что эта строка есть в начале файла!
 
 void MainWindow::on_pushCheck_clicked()
 {
@@ -88,6 +87,12 @@ void MainWindow::on_pushCheck_clicked()
 
 void MainWindow::switchToVersion(const QString &versionInput)
 {
+
+     if (checkUbuntuChroot()) {
+        // Если checkUbuntuChroot вернул true (chroot смонтирован), прекращаем выполнение
+        return;
+    }
+
     const QString PATH_CHROOT = "/ntfs-2TB/compat";
 
     // Step 1: Get the Ubuntu version
@@ -131,11 +136,9 @@ void MainWindow::switchToVersion(const QString &versionInput)
     ui->textEdit->append("<font color='green'><b>Готово! Активная версия: ubuntu_" + versionInput + "</b></font>");
 }
 
-
-
-void MainWindow::checkUbuntuChroot()
-{      
-    // Run the mount command to check if Ubuntu is mounted
+bool MainWindow::checkUbuntuChroot()
+{
+    // Запускаем команду для проверки, смонтирован ли Ubuntu chroot
     QProcess process;
     process.start("bash", QStringList() << "-c" << "mount | grep ubuntu | head -n1");
     process.waitForFinished();
@@ -143,17 +146,20 @@ void MainWindow::checkUbuntuChroot()
     QByteArray output = process.readAllStandardOutput().trimmed();
 
     if (output.isEmpty()) {
-        // The Ubuntu chroot is not mounted
+        // Если Ubuntu chroot не смонтирован
         qDebug() << "$var Пустая";
-
+        return false;  // Возвращаем false, если chroot не смонтирован
     } else {
-        // The Ubuntu chroot is mounted
+        // Если Ubuntu chroot смонтирован
         qDebug() << "$var не пустая";
-        
-        // Show a Qt message box instead of Zenity
+
+        // Показываем сообщение о том, что chroot смонтирован
         QMessageBox::information(this, "Info", "First, umount a Ubuntu chroot.", QMessageBox::Ok);
+
+        return true;  // Возвращаем true, если chroot смонтирован
     }
 }
+
 
 QString MainWindow::checkVersion()
 {
@@ -194,4 +200,74 @@ QString MainWindow::checkVersion()
     }
 
     return result;
+}
+
+void MainWindow::on_pushStart_clicked()
+{
+    // Создаём процесс
+    QProcess *process = new QProcess(this);
+
+    // Подготавливаем команду
+    QStringList arguments;
+    arguments << "service" << "ubuntu" << "onestart";  // Замените на вашу команду
+
+    // Запускаем процесс
+    process->start("doas", arguments);
+
+    // Проверка на успешный старт процесса
+    if (!process->waitForStarted()) {
+        qDebug() << "Ошибка при запуске команды!";
+        QMessageBox::critical(this, "Ошибка", "Не удалось запустить команду.");
+        return;
+    }
+
+    // Подключаем обработку ошибок
+    connect(process, &QProcess::readyReadStandardError, [process]() {
+        QByteArray errorOutput = process->readAllStandardError();
+        qDebug() << "Ошибка:" << errorOutput;
+    });
+
+    // Проверка на успешное завершение процесса
+    if (!process->waitForFinished()) {
+        qDebug() << "Ошибка при завершении команды!";
+        QMessageBox::critical(this, "Ошибка", "Команда не завершена корректно.");
+    } else {
+        qDebug() << "Команда успешно запущена!";
+        QMessageBox::information(nullptr, "Успех", "Команда успешно выполнена!");
+    }
+}
+
+void MainWindow::on_pushStop_clicked()
+{
+    // Создаём процесс
+    QProcess *process = new QProcess(this);
+
+    // Подготавливаем команду
+    QStringList arguments;
+    arguments << "service" << "ubuntu" << "onestop";  // Замените на вашу команду
+
+    // Запускаем процесс
+    process->start("doas", arguments);
+
+    // Проверка на успешный старт процесса
+    if (!process->waitForStarted()) {
+        qDebug() << "Ошибка при запуске команды!";
+        QMessageBox::critical(this, "Ошибка", "Не удалось запустить команду.");
+        return;
+    }
+
+    // Подключаем обработку ошибок
+    connect(process, &QProcess::readyReadStandardError, [process]() {
+        QByteArray errorOutput = process->readAllStandardError();
+        qDebug() << "Ошибка:" << errorOutput;
+    });
+
+    // Проверка на успешное завершение процесса
+    if (!process->waitForFinished()) {
+        qDebug() << "Ошибка при завершении команды!";
+        QMessageBox::critical(this, "Ошибка", "Команда не завершена корректно.");
+    } else {
+        qDebug() << "Команда успешно остановлена!";
+        QMessageBox::information(nullptr, "Успех", "Команда успешно остановлена!");
+    }
 }
