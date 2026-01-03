@@ -263,10 +263,10 @@ void MainWindow::on_pushStart_clicked()
     // Проверка на успешное завершение процесса
     if (!process->waitForFinished()) {
         qDebug() << "Ошибка при завершении команды!";
-        QMessageBox::critical(this, "Ошибка", "Команда не завершена корректно.");
+                QMessageBox::critical(this, "Ошибка", "Не удалось запустить команду.");
     } else {
         qDebug() << "Команда успешно запущена!";
-        QMessageBox::information(nullptr, "Успех", "Команда успешно выполнена!");
+        checkUbuntuChroot2();
     }
 }
 
@@ -301,6 +301,6 @@ void MainWindow::on_pushStop_clicked()
         QMessageBox::critical(this, "Ошибка", "Команда не завершена корректно.");
     } else {
         qDebug() << "Команда успешно остановлена!";
-        QMessageBox::information(nullptr, "Успех", "Команда успешно остановлена!");
+        checkUbuntuChroot2();
     }
 }

@@ -9,3 +9,5 @@
 /moc_predefs.h
 /ui_mainwindow.h
 /main.o
+/qrc_resource.o
+/qrc_resource.cpp
