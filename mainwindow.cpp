@@ -12,13 +12,15 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+
 {
     ui->setupUi(this);
+    checkUbuntuChroot2();
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+ delete ui;
 }
 
 void MainWindow::on_pushUbuntu16_clicked() {
@@ -156,6 +158,37 @@ bool MainWindow::checkUbuntuChroot()
         // Показываем сообщение о том, что chroot смонтирован
         QMessageBox::information(this, "Info", "First, umount a Ubuntu chroot.", QMessageBox::Ok);
 
+        return true;  // Возвращаем true, если chroot смонтирован
+    }
+}
+
+
+bool MainWindow::checkUbuntuChroot2()
+{
+    // Запускаем команду для проверки, смонтирован ли Ubuntu chroot
+    QProcess process;
+    process.start("bash", QStringList() << "-c" << "mount | grep ubuntu | head -n1");
+    process.waitForFinished();
+
+    QByteArray output = process.readAllStandardOutput().trimmed();
+
+    QString version = checkVersion();  // Get Ubuntu version from checkVersion()
+
+    if (output.isEmpty()) {
+        // Если Ubuntu chroot не смонтирован
+        if (!version.isEmpty()) {
+            ui->textEdit->append("Ubuntu " + version + " не смонтирована");
+        } else {
+            ui->textEdit->append("Ubuntu не смонтирована");
+        }
+        return false;  // Возвращаем false, если chroot не смонтирован
+    } else {
+        // Если Ubuntu chroot смонтирован
+        if (!version.isEmpty()) {
+            ui->textEdit->append("Ubuntu " + version + " смонтирована");
+        } else {
+            ui->textEdit->append("Ubuntu " + version + " не смонтирована");
+        }
         return true;  // Возвращаем true, если chroot смонтирован
     }
 }
