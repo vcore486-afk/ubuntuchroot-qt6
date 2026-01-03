@@ -1,0 +1,5 @@
+/build/*
+/.qtcreator/*
+/Makefile
+/.qmake.stash
+/ubuntuchroot-qt6
