@@ -82,9 +82,11 @@ void MainWindow::on_pushCheck_clicked()
         }
 
         result = "Версия Ubuntu: <b>" + version + "</b>";
+
     }
 
     ui->textEdit->setHtml(result);
+    checkUbuntuChroot2();
 }
 
 void MainWindow::switchToVersion(const QString &versionInput)
